@@ -2,6 +2,8 @@ $: << './lib'
 
 require 'rubymm'
 require 'astdsl/str_utils'
+require 'astdsl/commands/list'
+require 'astdsl/commands/load'
 require 'astdsl/commands/print'
 
 class Models
@@ -81,88 +83,6 @@ class Console
   def self.error(text)
     puts "Error: #{text}"
   end
-end
-
-class List
-  
-  def list_lang(lang)
-    Console.log "list #{lang}"
-    Models.each_for_lang(lang) do |id,fn|
-      puts " [#{id}] #{fn}"
-    end
-  end
-
-  def exec(*params)
-    if params.count==0
-      Console.log "list all"
-      puts "#{Models.langs.count} languages"
-      Models.langs.each do |lang|
-        puts "#{lang} models: #{Models.count_for_lang(lang)}"
-      end
-    elsif params.count==1 and Models.has_lang?(params[0])
-      list_lang params[0]
-    else
-      Console.error "list | list <a-language>"
-    end
-  end
-end
-
-
-class Load
-
-  def hidden?(p)
-    p=='.git'
-  end
-
-  def load(p)
-    if File.directory? p
-      Console.log "in dir #{p}"
-      load_dir(p)
-    else
-      load_file(p)
-    end
-  end
-
-  def load_dir(p)
-    #Console.log "In dir #{p}"
-    Dir.new(p).each do |c|
-      if c!='.' and c!='..' and not hidden?(c)
-        load("#{p}/#{c}")
-      end
-    end
-  end
-
-  def load_ruby_file(p)
-    Console.log "loading ruby file #{p}"
-    begin
-      model = RubyMM.parse_file(p)
-      Models.store_model('ruby',p,model)
-    rescue Exception => e
-      puts "Error loading #{p}: #{e}"
-      puts "Details:"
-      e.backtrace.each do |el|
-        puts "  #{el}"
-      end
-    end
-  end
-
-  def load_file(p)
-    if p.end_with? '.rb'
-      load_ruby_file(p)
-    else
-    end
-  end
-
-	def exec(*params)
-		params.each do |p|
-      if File.exists? p
-        load(p)
-      else
-        puts "skipping #{p} because it does not exist"
-      end
-		end
-	end
-
 end
 
 $console = Console.new
