@@ -30,7 +30,7 @@ class Models
   def self.each_for_lang(lang,&block)
     @models[lang].each do |fn,arr|
       id,model = arr
-      block.call(id,fn)
+      block.call(id,fn,model)
     end
   end
 
